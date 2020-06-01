@@ -7,43 +7,45 @@ import (
 	"time"
 
 	"github.com/bygui86/go-reverse-proxy/reverse-proxy/config"
+	"github.com/bygui86/go-reverse-proxy/reverse-proxy/logging"
+	"github.com/bygui86/go-reverse-proxy/reverse-proxy/reverse_proxy"
 )
 
-var reverseProxy *ReverseProxy
+var reverseProxy *reverse_proxy.ReverseProxy
 
 func main() {
-	Log.Info("Start reverse proxy")
+	logging.Log.Info("Start reverse proxy")
 
-	Log.Info("Load configurations")
-	cfg := loadConfig()
+	logging.Log.Info("Load configurations")
+	cfg := config.LoadConfig()
 
-	Log.Debug("Validate configurations")
-	cfgErr := cfg.validateConfig()
+	logging.Log.Debug("Validate configurations")
+	cfgErr := cfg.ValidateConfig()
 	if cfgErr != nil {
-		SugaredLog.Errorf("Config validation failed: %s", cfgErr.Error())
+		logging.SugaredLog.Errorf("Config validation failed: %s", cfgErr.Error())
 		os.Exit(501)
 	}
 
-	reverseProxy = startReverseProxy(cfg.targetUrl, cfg.reverseProxyPort)
+	reverseProxy = startReverseProxy(cfg.TargetUrl, cfg.ProxyPort)
 
-	Log.Info("Reverse proxy up and running")
+	logging.Log.Info("Reverse proxy up and running")
 
 	startSysCallChannel()
 
 	shutdownAndWait(3)
 }
 
-func startReverseProxy(targetUrl string, port int) *ReverseProxy {
-	Log.Debug("Start reverse proxy")
-	proxy, err := newReverseProxy(targetUrl, port)
+func startReverseProxy(targetUrl string, port int) *reverse_proxy.ReverseProxy {
+	logging.Log.Debug("Start reverse proxy")
+	proxy, err := reverse_proxy.NewReverseProxy(targetUrl, port)
 	if err != nil {
-		SugaredLog.Errorf("Reverse proxy creation failed: %s", err.Error())
+		logging.SugaredLog.Errorf("Reverse proxy creation failed: %s", err.Error())
 		os.Exit(501)
 	}
-	Log.Debug("Reverse proxy server successfully created")
+	logging.Log.Debug("Reverse proxy server successfully created")
 
-	proxy.start()
-	Log.Debug("Reverse proxy server successfully started")
+	proxy.Start()
+	logging.Log.Debug("Reverse proxy server successfully started")
 
 	return proxy
 }
@@ -55,10 +57,10 @@ func startSysCallChannel() {
 }
 
 func shutdownAndWait(timeout int) {
-	SugaredLog.Warnf("Termination signal received! Timeout %d", timeout)
+	logging.SugaredLog.Warnf("Termination signal received! Timeout %d", timeout)
 
 	if reverseProxy != nil {
-		reverseProxy.shutdown(timeout)
+		reverseProxy.Shutdown(timeout)
 	}
 
 	time.Sleep(time.Duration(timeout) * time.Second)

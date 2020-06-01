@@ -17,10 +17,10 @@ export GO111MODULE=on
 ## applications
 
 start-app :		## Start application
-	cd rest-app && godotenv -f local.env go run main.go
+	cd rest-app && make start
 
-start-rev-p :		## Start application
-	cd reverse-proxy && godotenv -f local.env go run main.go
+start-reverse-proxy :		## Start application
+	cd reverse-proxy && make start
 
 ## helpers
 
