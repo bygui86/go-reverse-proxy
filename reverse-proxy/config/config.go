@@ -8,27 +8,31 @@ import (
 )
 
 const (
-	proxyHostEnvVar = "PROXY_HOST"
-	proxyPortEnvVar = "PROXY_PORT"
-	targetUrlEnvVar = "TARGET_URL" // format: {protocol}://{host}:{port}
+	proxyHostEnvVar      = "PROXY_HOST"
+	proxyPortEnvVar      = "PROXY_PORT"
+	targetUrlEnvVar      = "TARGET_URL" // format: {protocol}://{host}:{port}
+	nestedLevelNumEnvVar = "NESTED_LEVEL_NUMBER"
 
-	proxyHostDefault = "localhost"
-	proxyPortDefault = 8080
-	targetUrlDefault = ""
+	proxyHostDefault      = "localhost"
+	proxyPortDefault      = 8080
+	targetUrlDefault      = ""
+	nestedLevelNumDefault = 5
 )
 
 type config struct {
-	ProxyHost string
-	ProxyPort int
-	TargetUrl string
+	ProxyHost      string
+	ProxyPort      int
+	TargetUrl      string
+	NestedLevelNum int
 }
 
 func LoadConfig() *config {
 	logging.Log.Debug("Load configurations")
 	return &config{
-		ProxyHost: utils.GetStringEnv(proxyHostEnvVar, proxyHostDefault),
-		ProxyPort: utils.GetIntEnv(proxyPortEnvVar, proxyPortDefault),
-		TargetUrl: utils.GetStringEnv(targetUrlEnvVar, targetUrlDefault),
+		ProxyHost:      utils.GetStringEnv(proxyHostEnvVar, proxyHostDefault),
+		ProxyPort:      utils.GetIntEnv(proxyPortEnvVar, proxyPortDefault),
+		TargetUrl:      utils.GetStringEnv(targetUrlEnvVar, targetUrlDefault),
+		NestedLevelNum: utils.GetIntEnv(nestedLevelNumEnvVar, nestedLevelNumDefault),
 	}
 }
 

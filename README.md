@@ -3,16 +3,7 @@
 
 Simple reverse proxy in Golang
 
-## TODOs
-
-- [x] single backend server sample
-- [ ] multiple backend servers sample
-
----
-
 ## Run
-
-### Single
 
 1. start application
     ```shell script
@@ -24,10 +15,6 @@ Simple reverse proxy in Golang
     make start-reverse-proxy
     ```
 
-### Multiple
-
-`TODO`
-
 ---
 
 ## Links
@@ -38,8 +25,5 @@ Simple reverse proxy in Golang
 - https://gist.github.com/thezelus/d5ac9ec563b061c514dc
 - https://www.integralist.co.uk/posts/golang-reverse-proxy/
 
-## Multiple backend servers
-- https://hackernoon.com/writing-a-reverse-proxy-in-just-one-line-with-go-c1edfa78c84b
-
-### to be seen
+### to be verified
 - https://golang.org/pkg/net/http/httputil/#DumpResponse

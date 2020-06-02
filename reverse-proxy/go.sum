@@ -1,8 +1,4 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/bygui86/go-reverse-proxy v0.0.0-20200531164824-1e3c0fff4f59 h1:RenVxL+PXekBW2BbdGmhQCrrqQpsGZdIw2nDwhYMRTM=
-github.com/bygui86/go-reverse-proxy v0.0.0-20200601130430-20982e8c2d24 h1:gAGfQJBN+yp0SRDfK0u1wGDWu6jXPJEsXTA49nJpSBs=
-github.com/bygui86/go-reverse-proxy/rest-app v0.0.0-20200601130430-20982e8c2d24 h1:d7KyedF+E9/bOaWkwEYkia1F36h6Sul8SeV7qPUn89Q=
-github.com/bygui86/go-reverse-proxy/rest-app v0.0.0-20200601130430-20982e8c2d24/go.mod h1:HrsX1U9a9nYA4K/KjnNMUoni0OqWcuR4B7xOBeohxQI=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=

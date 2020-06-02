@@ -24,7 +24,7 @@ func setupSingleHostReverseProxy(targetUrlString string) (*httputil.ReverseProxy
 	proxy := httputil.NewSingleHostReverseProxy(targetUrl)
 
 	logging.Log.Debug("Setup proxy director")
-	proxy.Director = createCustomDirector(proxy)
+	proxy.Director = addXForwardHeaderToDefaultDirector(proxy)
 
 	logging.Log.Debug("Set proxy modify response")
 	proxy.ModifyResponse = modifyResponse
@@ -35,7 +35,7 @@ func setupSingleHostReverseProxy(targetUrlString string) (*httputil.ReverseProxy
 	return proxy, nil
 }
 
-func createCustomDirector(proxy *httputil.ReverseProxy) func(req *http.Request) {
+func addXForwardHeaderToDefaultDirector(proxy *httputil.ReverseProxy) func(req *http.Request) {
 	logging.Log.Debug("Get default director from proxy")
 	defaultDirector := proxy.Director
 
@@ -78,6 +78,8 @@ func modifyResponse(res *http.Response) error {
 	return customBehaviour(body)
 }
 
+// Because go lang is a pain in the ass if you read the body then any subsequent calls
+// are unable to read the body again...
 func duplicateResponseBody(res *http.Response) ([]byte, error) {
 	body, readErr := ioutil.ReadAll(res.Body)
 	if readErr != nil {

@@ -7,7 +7,7 @@ import (
 	"github.com/bygui86/go-reverse-proxy/reverse-proxy/logging"
 )
 
-func NewReverseProxy(targetUrl string, host string, port int) (*ReverseProxy, error) {
+func NewReverseProxy(targetUrl string, host string, port int, nestedLevelNum int) (*ReverseProxy, error) {
 	logging.SugaredLog.Debugf("Create new reverse proxy for target %s", targetUrl)
 
 	logging.Log.Debug("Create reverse proxy")
@@ -17,7 +17,7 @@ func NewReverseProxy(targetUrl string, host string, port int) (*ReverseProxy, er
 	}
 
 	logging.Log.Debug("Create router")
-	router := setupRouter(proxy)
+	router := setupRouter(proxy, nestedLevelNum)
 
 	logging.Log.Debug("Create HTTP server")
 	httpServer := setupHttpServer(router, host, port)

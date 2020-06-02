@@ -5,13 +5,14 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"strings"
 
 	"github.com/gorilla/mux"
 
 	"github.com/bygui86/go-reverse-proxy/reverse-proxy/logging"
 )
 
-func setupRouter(proxy *httputil.ReverseProxy) *mux.Router {
+func setupRouter(proxy *httputil.ReverseProxy, nestedLevelNum int) *mux.Router {
 	logging.Log.Debug("Setup new router")
 
 	router := mux.NewRouter().StrictSlash(true)
@@ -21,8 +22,21 @@ func setupRouter(proxy *httputil.ReverseProxy) *mux.Router {
 	// INFO part 2: otherwise we could manage the root url internally in the reverse proxy
 	// http.Handle(rootEndpoint, router)
 
-	router.HandleFunc(forwardEndpoint, proxy.ServeHTTP)
+	// INFO part 1: specific url levels
+	// router.HandleFunc(forwardEndpoint, proxy.ServeHTTP)
+	// INFO part 2: all url levels till value of 'nestedLevelNum'
+	handleNestedLevels(router, proxy, nestedLevelNum)
+
 	return router
+}
+
+func handleNestedLevels(router *mux.Router, proxy *httputil.ReverseProxy, nestedLevelNum int) {
+	strBuilder := strings.Builder{}
+	for i := 1; i <= nestedLevelNum; i++ {
+		strBuilder.WriteString(forwardEndpoint)
+		logging.SugaredLog.Debugf("%d nested level: %s", i, strBuilder.String())
+		router.HandleFunc(strBuilder.String(), proxy.ServeHTTP)
+	}
 }
 
 func setupHttpServer(router *mux.Router, host string, port int) *http.Server {
