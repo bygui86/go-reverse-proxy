@@ -8,14 +8,17 @@ import (
 )
 
 const (
+	proxyHostEnvVar = "PROXY_HOST"
 	proxyPortEnvVar = "PROXY_PORT"
 	targetUrlEnvVar = "TARGET_URL" // format: {protocol}://{host}:{port}
 
+	proxyHostDefault = "localhost"
 	proxyPortDefault = 8080
 	targetUrlDefault = ""
 )
 
 type config struct {
+	ProxyHost string
 	ProxyPort int
 	TargetUrl string
 }
@@ -23,6 +26,7 @@ type config struct {
 func LoadConfig() *config {
 	logging.Log.Debug("Load configurations")
 	return &config{
+		ProxyHost: utils.GetStringEnv(proxyHostEnvVar, proxyHostDefault),
 		ProxyPort: utils.GetIntEnv(proxyPortEnvVar, proxyPortDefault),
 		TargetUrl: utils.GetStringEnv(targetUrlEnvVar, targetUrlDefault),
 	}

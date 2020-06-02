@@ -26,7 +26,7 @@ func main() {
 		os.Exit(501)
 	}
 
-	reverseProxy = startReverseProxy(cfg.TargetUrl, cfg.ProxyPort)
+	reverseProxy = startReverseProxy(cfg.TargetUrl, cfg.ProxyHost, cfg.ProxyPort)
 
 	logging.Log.Info("Reverse proxy up and running")
 
@@ -35,9 +35,9 @@ func main() {
 	shutdownAndWait(3)
 }
 
-func startReverseProxy(targetUrl string, port int) *reverse_proxy.ReverseProxy {
+func startReverseProxy(targetUrl string, host string, port int) *reverse_proxy.ReverseProxy {
 	logging.Log.Debug("Start reverse proxy")
-	proxy, err := reverse_proxy.NewReverseProxy(targetUrl, port)
+	proxy, err := reverse_proxy.NewReverseProxy(targetUrl, host, port)
 	if err != nil {
 		logging.SugaredLog.Errorf("Reverse proxy creation failed: %s", err.Error())
 		os.Exit(501)

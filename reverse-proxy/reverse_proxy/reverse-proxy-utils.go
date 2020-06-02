@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"os"
-	"strconv"
 
 	"github.com/bygui86/go-reverse-proxy/reverse-proxy/logging"
 )
 
-func createSingleHostReverseProxy(targetUrlString string) (*httputil.ReverseProxy, error) {
+func setupSingleHostReverseProxy(targetUrlString string) (*httputil.ReverseProxy, error) {
+	logging.SugaredLog.Debugf("Setup new single-host reverse proxy to target %s", targetUrlString)
+
 	logging.SugaredLog.Debugf("Parse target URL %s", targetUrlString)
 	targetUrl, urlErr := url.Parse(targetUrlString)
 	if urlErr != nil {
@@ -23,6 +23,19 @@ func createSingleHostReverseProxy(targetUrlString string) (*httputil.ReverseProx
 	logging.Log.Debug("Create reverse proxy")
 	proxy := httputil.NewSingleHostReverseProxy(targetUrl)
 
+	logging.Log.Debug("Setup proxy director")
+	setupProxyDirector(proxy)
+
+	logging.Log.Debug("Set proxy modify response")
+	proxy.ModifyResponse = modifyResponse
+
+	// INFO: if not using gorilla mux router with HTTP server, uncomment this line to directly access to reverse proxy
+	// http.HandleFunc(rootEndpoint, r.proxy.ServeHTTP)
+
+	return proxy, nil
+}
+
+func setupProxyDirector(proxy *httputil.ReverseProxy) {
 	logging.Log.Debug("Create director")
 	director := proxy.Director
 
@@ -32,31 +45,15 @@ func createSingleHostReverseProxy(targetUrlString string) (*httputil.ReverseProx
 		req.Header.Set(additionalHeaderKey, req.Header.Get(hostHeaderKey))
 		req.Host = req.URL.Host
 	}
-
-	logging.Log.Debug("Set modify response on reverse proxy")
-	proxy.ModifyResponse = func(res *http.Response) error {
-		body, err := duplicateResponseBody(res)
-		if err != nil {
-			return err
-		}
-
-		return customBehaviour(body)
-	}
-	return proxy, nil
 }
 
-func (r *ReverseProxy) listenAndServe() {
-	logging.SugaredLog.Debugf("Listen and server on port %d", r.port)
-	r.errChannel <- http.ListenAndServe(":"+strconv.Itoa(r.port), nil)
-}
-
-func (r *ReverseProxy) startHttpServerController() {
-	logging.Log.Debug("Start HTTP server controller")
-	for err := range r.errChannel {
-		logging.SugaredLog.Errorf("HTTP server failed and stopped working: %s", err.Error())
-		r.running = false
-		os.Exit(502)
+func modifyResponse(res *http.Response) error {
+	body, err := duplicateResponseBody(res)
+	if err != nil {
+		return err
 	}
+
+	return customBehaviour(body)
 }
 
 func duplicateResponseBody(res *http.Response) ([]byte, error) {
@@ -78,7 +75,7 @@ func dumpResponse(res *http.Response) ([]byte, error) {
 	return httputil.DumpResponse(res, true)
 }
 
-// TODO add your custom behaviour here
+// INFO: add your custom behaviour here
 func customBehaviour(responseBody []byte) error {
 	logging.SugaredLog.Infof("Custom behaviour on response body: %s", string(responseBody))
 	return nil

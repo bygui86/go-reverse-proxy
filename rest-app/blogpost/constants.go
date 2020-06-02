@@ -6,5 +6,5 @@ const (
 
 	applicationJsonValue = "application/json"
 
-	rootMessage = "Welcome to go-blogpost sample project"
+	rootMessage = "Welcome to blog-post REST application"
 )

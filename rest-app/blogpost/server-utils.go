@@ -3,6 +3,7 @@ package blogpost
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 
@@ -17,12 +18,17 @@ const (
 	post2_id    = "2"
 	post2_title = "My second BlogPost"
 	post2_body  = "This is the content of my second BlogPost"
+
+	post3_id    = "3"
+	post3_title = "My third BlogPost"
+	post3_body  = "This is the content of my third BlogPost"
 )
 
 func initBlogPosts() []*blogPost {
 	return []*blogPost{
 		buildBlogPost(post1_id, post1_title, post1_body),
 		buildBlogPost(post2_id, post2_title, post2_body),
+		buildBlogPost(post3_id, post3_title, post3_body),
 	}
 }
 
@@ -30,32 +36,34 @@ func initRoutes() []*serverRoute {
 	return []*serverRoute{}
 }
 
-// setupRouter - Create new Gorilla mux router
-func (s *Server) setupRouter() {
-	logging.Log.Debug("Create new router")
+// setupRouter - Setup new Gorilla mux router
+func setupRouter() *mux.Router {
+	logging.Log.Debug("Setup new router")
 
-	s.router = mux.NewRouter().StrictSlash(true)
+	return mux.NewRouter().StrictSlash(true)
+}
 
+func (s *Server) setupHandlers() {
 	// blogPosts
-	s.addRoute(routerPostsRootUrl, s.getBlogPostByQuery, http.MethodGet,
+	addRoute(s.router, blogPostsRootUrl, s.getBlogPostByQuery, http.MethodGet,
 		true, false, map[string]string{idKey: idValue})
-	s.addRoute(routerPostsRootUrl, s.getBlogPosts, http.MethodGet,
+	addRoute(s.router, blogPostsRootUrl, s.getBlogPosts, http.MethodGet,
 		true, false, nil)
-	s.addRoute(routerPostsRootUrl, s.createBlogPost, http.MethodPost,
+	addRoute(s.router, blogPostsRootUrl, s.createBlogPost, http.MethodPost,
 		true, true, nil)
-	s.addRoute(routerPostsRootUrl+routerIdUrlPath, s.getBlogPostByPath, http.MethodGet,
+	addRoute(s.router, blogPostsRootUrl+blogPostIdEndpointPath, s.getBlogPostByPath, http.MethodGet,
 		true, false, nil)
-	s.addRoute(routerPostsRootUrl+routerIdUrlPath, s.updateBlogPost, http.MethodPut,
+	addRoute(s.router, blogPostsRootUrl+blogPostIdEndpointPath, s.updateBlogPost, http.MethodPut,
 		true, true, nil)
-	s.addRoute(routerPostsRootUrl+routerIdUrlPath, s.deleteBlogPost, http.MethodDelete,
+	addRoute(s.router, blogPostsRootUrl+blogPostIdEndpointPath, s.deleteBlogPost, http.MethodDelete,
 		true, false, nil)
 
 	// routes
-	s.addRoute(routerRoutesRootUrl, s.getRoutes, http.MethodGet,
+	addRoute(s.router, routesRootUrl, s.getRoutes, http.MethodGet,
 		true, false, nil)
 
 	// root
-	s.addRoute(routerRootUrl, s.getRoot, http.MethodGet,
+	addRoute(s.router, rootUrl, s.getRoot, http.MethodGet,
 		false, false, nil)
 }
 
@@ -68,10 +76,10 @@ func (s *Server) setupRouter() {
 		}
 	... and use it as we wish.
 */
-func (s *Server) addRoute(url string, handler func(http.ResponseWriter, *http.Request),
+func addRoute(router *mux.Router, url string, handler func(http.ResponseWriter, *http.Request),
 	method string, acceptHeader, contentTypeHeader bool, queries map[string]string) {
 
-	route := s.router.HandleFunc(url, handler)
+	route := router.HandleFunc(url, handler)
 	route.Methods(method)
 	if acceptHeader {
 		route.Headers(acceptHeaderKey, applicationJsonValue)
@@ -86,21 +94,31 @@ func (s *Server) addRoute(url string, handler func(http.ResponseWriter, *http.Re
 	}
 }
 
-// setupHTTPServer - Create new HTTP server
-func (s *Server) setupHTTPServer() {
-	logging.SugaredLog.Debugf("Create new HTTP server on port %d", s.config.RestPort)
+// setupHttpServer - Setup new HTTP server
+func setupHttpServer(router *mux.Router, host string, port int) *http.Server {
+	logging.SugaredLog.Debugf("Setup new HTTP server")
 
-	if s.config != nil {
-		s.httpServer = &http.Server{
-			Addr:    fmt.Sprintf(httpServerHostFormat, s.config.RestHost, s.config.RestPort),
-			Handler: s.router,
-			// Good practice to set timeouts to avoid Slowloris attacks.
-			WriteTimeout: httpServerWriteTimeoutDefault,
-			ReadTimeout:  httpServerReadTimeoutDefault,
-			IdleTimeout:  httpServerIdelTimeoutDefault,
-		}
-		return
+	return &http.Server{
+		Addr:    fmt.Sprintf(httpServerHostFormat, host, port),
+		Handler: router,
+		// Good practice to set timeouts to avoid Slowloris attacks.
+		WriteTimeout: httpServerWriteTimeoutDefault,
+		ReadTimeout:  httpServerReadTimeoutDefault,
+		IdleTimeout:  httpServerIdelTimeoutDefault,
 	}
+}
 
-	logging.Log.Error("HTTP server creation failed: REST server configurations not initialized")
+func (s *Server) startHttpServerController() {
+	logging.Log.Debug("Start HTTP server controller")
+
+	for err := range s.errChannel {
+		logging.SugaredLog.Errorf("HTTP server failed and stopped working: %s", err.Error())
+		s.running = false
+		os.Exit(502)
+	}
+}
+
+func (s *Server) listenAndServe() {
+	logging.SugaredLog.Debugf("Listen and serve on port %d", s.config.RestPort)
+	s.errChannel <- s.httpServer.ListenAndServe()
 }

@@ -28,7 +28,7 @@ func (s *Server) getBlogPosts(writer http.ResponseWriter, request *http.Request)
 	if err != nil {
 		logging.SugaredLog.Errorf(errorMessageFormat, requestStr, errorEncodeResponseMessage, err.Error())
 		setStatusInternalServerError(writer)
-		s.returnErrorResponse(writer, requestStr, err.Error())
+		returnErrorResponse(writer, requestStr, err.Error())
 	}
 }
 
@@ -41,7 +41,7 @@ func (s *Server) getBlogPostByPath(writer http.ResponseWriter, request *http.Req
 		errMsg := fmt.Sprintf("%s not found in URL", idKey)
 		logging.SugaredLog.Errorf(errorMessageFormat, requestStr, "retrieve path var", errMsg)
 		setStatusBadRequest(writer)
-		s.returnErrorResponse(writer, requestStr, errMsg)
+		returnErrorResponse(writer, requestStr, errMsg)
 		return
 	}
 
@@ -53,7 +53,7 @@ func (s *Server) getBlogPostByPath(writer http.ResponseWriter, request *http.Req
 			if err != nil {
 				logging.SugaredLog.Errorf(errorMessageFormat, requestStr, errorEncodeResponseMessage, err.Error())
 				setStatusInternalServerError(writer)
-				s.returnErrorResponse(writer, requestStr, err.Error())
+				returnErrorResponse(writer, requestStr, err.Error())
 				return
 			}
 			return
@@ -62,7 +62,7 @@ func (s *Server) getBlogPostByPath(writer http.ResponseWriter, request *http.Req
 
 	logging.SugaredLog.Warnf("Post with id %s not found", pathVars[idKey])
 	setStatusNotFound(writer)
-	s.returnErrorResponse(writer, requestStr, errorPostNotFoundMessage)
+	returnErrorResponse(writer, requestStr, errorPostNotFoundMessage)
 }
 
 func (s *Server) getBlogPostByQuery(writer http.ResponseWriter, request *http.Request) {
@@ -73,7 +73,7 @@ func (s *Server) getBlogPostByQuery(writer http.ResponseWriter, request *http.Re
 	if queryErr != nil {
 		logging.SugaredLog.Errorf(errorMessageFormat, requestStr, "retrieve query param", queryErr.Error())
 		setStatusBadRequest(writer)
-		s.returnErrorResponse(writer, requestStr, queryErr.Error())
+		returnErrorResponse(writer, requestStr, queryErr.Error())
 		return
 	}
 
@@ -85,7 +85,7 @@ func (s *Server) getBlogPostByQuery(writer http.ResponseWriter, request *http.Re
 			if encodeErr != nil {
 				logging.SugaredLog.Errorf(errorMessageFormat, requestStr, encodeErr.Error())
 				setStatusInternalServerError(writer)
-				s.returnErrorResponse(writer, requestStr, encodeErr.Error())
+				returnErrorResponse(writer, requestStr, encodeErr.Error())
 				return
 			}
 			return
@@ -94,7 +94,7 @@ func (s *Server) getBlogPostByQuery(writer http.ResponseWriter, request *http.Re
 
 	logging.SugaredLog.Warnf("Post with id %s not found", id)
 	setStatusNotFound(writer)
-	s.returnErrorResponse(writer, requestStr, errorPostNotFoundMessage)
+	returnErrorResponse(writer, requestStr, errorPostNotFoundMessage)
 }
 
 func (s *Server) createBlogPost(writer http.ResponseWriter, request *http.Request) {
@@ -106,7 +106,7 @@ func (s *Server) createBlogPost(writer http.ResponseWriter, request *http.Reques
 	if decErr != nil {
 		logging.SugaredLog.Errorf(errorMessageFormat, requestStr, errorDecodeResponseMessage, decErr.Error())
 		setStatusBadRequest(writer)
-		s.returnErrorResponse(writer, requestStr, decErr.Error())
+		returnErrorResponse(writer, requestStr, decErr.Error())
 		return
 	}
 
@@ -119,7 +119,7 @@ func (s *Server) createBlogPost(writer http.ResponseWriter, request *http.Reques
 	if encErr != nil {
 		logging.SugaredLog.Errorf(errorMessageFormat, requestStr, errorEncodeResponseMessage, encErr.Error())
 		setStatusInternalServerError(writer)
-		s.returnErrorResponse(writer, requestStr, encErr.Error())
+		returnErrorResponse(writer, requestStr, encErr.Error())
 	}
 }
 
@@ -132,7 +132,7 @@ func (s *Server) updateBlogPost(writer http.ResponseWriter, request *http.Reques
 		errMsg := fmt.Sprintf("%s not found in URL", idKey)
 		logging.SugaredLog.Errorf(errorMessageFormat, requestStr, "retrieve path var", errMsg)
 		setStatusBadRequest(writer)
-		s.returnErrorResponse(writer, requestStr, errMsg)
+		returnErrorResponse(writer, requestStr, errMsg)
 		return
 	}
 
@@ -148,7 +148,7 @@ func (s *Server) updateBlogPost(writer http.ResponseWriter, request *http.Reques
 			if decErr != nil {
 				logging.SugaredLog.Errorf(errorMessageFormat, requestStr, errorDecodeResponseMessage, decErr.Error())
 				setStatusBadRequest(writer)
-				s.returnErrorResponse(writer, requestStr, decErr.Error())
+				returnErrorResponse(writer, requestStr, decErr.Error())
 				return
 			}
 
@@ -161,7 +161,7 @@ func (s *Server) updateBlogPost(writer http.ResponseWriter, request *http.Reques
 			if encErr != nil {
 				logging.SugaredLog.Errorf(errorMessageFormat, requestStr, errorEncodeResponseMessage, encErr.Error())
 				setStatusInternalServerError(writer)
-				s.returnErrorResponse(writer, requestStr, encErr.Error())
+				returnErrorResponse(writer, requestStr, encErr.Error())
 				return
 			}
 			return
@@ -169,7 +169,7 @@ func (s *Server) updateBlogPost(writer http.ResponseWriter, request *http.Reques
 	}
 
 	setStatusNotFound(writer)
-	s.returnErrorResponse(writer, requestStr, errorPostNotFoundMessage)
+	returnErrorResponse(writer, requestStr, errorPostNotFoundMessage)
 }
 
 func (s *Server) deleteBlogPost(writer http.ResponseWriter, request *http.Request) {
@@ -181,7 +181,7 @@ func (s *Server) deleteBlogPost(writer http.ResponseWriter, request *http.Reques
 		errMsg := fmt.Sprintf("%s not found in URL", idKey)
 		logging.SugaredLog.Errorf(errorMessageFormat, requestStr, "retrieve path var", errMsg)
 		setStatusBadRequest(writer)
-		s.returnErrorResponse(writer, requestStr, errMsg)
+		returnErrorResponse(writer, requestStr, errMsg)
 		return
 	}
 
@@ -203,7 +203,7 @@ func (s *Server) getRoot(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		logging.SugaredLog.Errorf(errorMessageFormat, requestStr, "write string response", err.Error())
 		setStatusInternalServerError(writer)
-		s.returnErrorResponse(writer, requestStr, err.Error())
+		returnErrorResponse(writer, requestStr, err.Error())
 	}
 }
 
@@ -216,7 +216,7 @@ func (s *Server) getRoutes(writer http.ResponseWriter, request *http.Request) {
 		if walkErr != nil {
 			logging.SugaredLog.Errorf(errorMessageFormat, requestStr, "walk through routes", walkErr.Error())
 			setStatusInternalServerError(writer)
-			s.returnErrorResponse(writer, requestStr, walkErr.Error())
+			returnErrorResponse(writer, requestStr, walkErr.Error())
 			return
 		}
 	}
@@ -226,6 +226,6 @@ func (s *Server) getRoutes(writer http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		logging.SugaredLog.Errorf(errorMessageFormat, requestStr, errorEncodeResponseMessage, err.Error())
 		setStatusInternalServerError(writer)
-		s.returnErrorResponse(writer, requestStr, err.Error())
+		returnErrorResponse(writer, requestStr, err.Error())
 	}
 }

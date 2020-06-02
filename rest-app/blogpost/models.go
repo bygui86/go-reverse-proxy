@@ -15,6 +15,7 @@ type Server struct {
 	config     *config
 	router     *mux.Router
 	httpServer *http.Server
+	errChannel chan error
 	running    bool
 	blogPosts  []*blogPost
 	routes     []*serverRoute

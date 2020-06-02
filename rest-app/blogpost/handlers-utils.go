@@ -18,19 +18,7 @@ func buildErrorResponse(request string, errorMsg string) *errorResponse {
 	return &errorResponse{Request: request, Message: errorMsg}
 }
 
-func (s *Server) badResponse(writer http.ResponseWriter, requestStr, errorArea, errorMsg string) {
-	logging.SugaredLog.Errorf(errorMessageFormat, requestStr, errorArea, errorMsg)
-	setStatusBadRequest(writer)
-	s.returnErrorResponse(writer, requestStr, errorMsg)
-}
-
-func (s *Server) internalErrorResponse(writer http.ResponseWriter, requestStr, errorArea, errorMsg string) {
-	logging.SugaredLog.Errorf(errorMessageFormat, requestStr, errorArea, errorMsg)
-	setStatusInternalServerError(writer)
-	s.returnErrorResponse(writer, requestStr, errorMsg)
-}
-
-func (s *Server) returnErrorResponse(writer http.ResponseWriter, request, errorMsg string) {
+func returnErrorResponse(writer http.ResponseWriter, request, errorMsg string) {
 	err := json.NewEncoder(writer).Encode(buildErrorResponse(request, errorMsg))
 	if err != nil {
 		logging.SugaredLog.Errorf("Error on %s (encode ERROR response): %s - No response back to client",
