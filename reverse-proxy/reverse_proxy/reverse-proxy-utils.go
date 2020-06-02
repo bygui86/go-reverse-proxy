@@ -24,7 +24,7 @@ func setupSingleHostReverseProxy(targetUrlString string) (*httputil.ReverseProxy
 	proxy := httputil.NewSingleHostReverseProxy(targetUrl)
 
 	logging.Log.Debug("Setup proxy director")
-	setupProxyDirector(proxy)
+	proxy.Director = createCustomDirector(proxy)
 
 	logging.Log.Debug("Set proxy modify response")
 	proxy.ModifyResponse = modifyResponse
@@ -35,16 +35,39 @@ func setupSingleHostReverseProxy(targetUrlString string) (*httputil.ReverseProxy
 	return proxy, nil
 }
 
-func setupProxyDirector(proxy *httputil.ReverseProxy) {
-	logging.Log.Debug("Create director")
-	director := proxy.Director
+func createCustomDirector(proxy *httputil.ReverseProxy) func(req *http.Request) {
+	logging.Log.Debug("Get default director from proxy")
+	defaultDirector := proxy.Director
 
-	logging.Log.Debug("Set director on reverse proxy")
-	proxy.Director = func(req *http.Request) {
-		director(req)
-		req.Header.Set(additionalHeaderKey, req.Header.Get(hostHeaderKey))
-		req.Host = req.URL.Host
+	logging.Log.Debug("Set custom director on proxy")
+	return func(req *http.Request) {
+		logging.Log.Debug("Custom proxy director")
+
+		logRequestInfo(req, "BEFORE default redirection")
+		// BEFORE DEFAULT REDIRECTION
+		// req.Host = localhost:8080
+		// req.Header.Get(hostHeaderKey) = -empty-
+		// req.URL.Host = -empty-
+		// req.URL.Scheme = -empty-
+
+		// WARN: this is required to perform a correct redirection (see httputil.NewSingleHostReverseProxy)
+		defaultDirector(req)
+
+		logRequestInfo(req, "AFTER default redirection")
+		// AFTER DEFAULT REDIRECTION
+		// req.Host = localhost:8080
+		// req.Header.Get(hostHeaderKey) = -empty-
+		// req.URL.Host = localhost:8081
+		// req.URL.Scheme = http
+
+		req.Header.Set(xForwardedHost, req.Host)
 	}
+}
+
+func logRequestInfo(req *http.Request, prefix string) {
+	logging.SugaredLog.Debugf("[%s] Host: req[%s], reqHeader[%s], reqUrl[%s]",
+		prefix, req.Host, req.Header.Get(hostHeaderKey), req.URL.Host)
+	logging.SugaredLog.Debugf("[%s] Scheme: [%s]", prefix, req.URL.Scheme)
 }
 
 func modifyResponse(res *http.Response) error {
@@ -52,7 +75,6 @@ func modifyResponse(res *http.Response) error {
 	if err != nil {
 		return err
 	}
-
 	return customBehaviour(body)
 }
 

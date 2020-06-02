@@ -11,6 +11,6 @@ const (
 	rootEndpoint    = "/"
 	forwardEndpoint = "/{.*}"
 
-	additionalHeaderKey = "X-Forwarded-Host"
-	hostHeaderKey       = "Host"
+	xForwardedHost = "X-Forwarded-Host" // reverse proxy host
+	hostHeaderKey  = "Host"
 )
